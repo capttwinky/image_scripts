@@ -1,4 +1,4 @@
 image_scripts
 =============
 
-python scripts for image analytics and processing
+python scripts for image analytics and processing.

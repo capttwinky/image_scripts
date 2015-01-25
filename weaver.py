@@ -108,26 +108,25 @@ def make_weft_image(rgbs, thread_width, ends, shots):
     return img
 
 
-def make_web_image(rgbs, thread_width, ends, shots):
+def make_web_image(warp_thread, weft_thread, thread_width, ends, shots):
     image_width = thread_width * ends
     image_height = thread_width * shots
-        
-    weft_image = make_weft_image(rgbs, thread_width, ends, shots)
-    warp_image = make_warp_image(rgbs, thread_width, ends, shots)
-    weft_image.show()
-    warp_image.show()
+    weft_image = make_weft_image(weft_thread, thread_width, ends, shots)
+    warp_image = make_warp_image(warp_thread, thread_width, ends, shots)
+    #~ weft_image.show()
+    #~ warp_image.show()
     weft_pixels = weft_image.load()
     warp_pixels = warp_image.load()
     
-    headles = ((1,0,1,0), (0,1,0,1))
-    pedals = [(headles[0]), (headles[1])]
-    pedal_steps = (s for s in ((pedals[0],), (pedals[1],),))
+    headles = ((1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1))
+    pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
+    pedal_steps = ((pedals[0],pedals[1]), (pedals[0],pedals[2],), (pedals[1],pedals[3],),(pedals[3],pedals[2],),)
     treads = cycle(pedal_steps)
     img = Image.new('RGB', (image_width,image_height), "black") # create a new black image
     pixels = img.load()
     for s in xrange(shots):
-        tread = treads.next()
-        shed = [warp_pixels if any(h) else weft_pixels for h in zip(*tread)]
+        lift = sum(treads.next(),tuple())
+        shed = [warp_pixels if any(h) else weft_pixels for h in zip(*lift)]
         for y in xrange(thread_width):
             ay = thread_width*s+y
             for e in xrange(ends):
@@ -140,14 +139,16 @@ def make_web_image(rgbs, thread_width, ends, shots):
 def main():
     
     #~ g_list = [(0, (255,255,0)),(.25,(0,128,255)),(.45,(255,0,255)),(.65,(255,0,0)),(.85,(128,0,128)),(.99,(255,255,0))]
-    g_list = [(0, (255,255,0)),(.25,(0,128,255)),(.5,(0,128,128)),(.75,(128,0,128)),(.99,(255,255,0))]
+    #~ g_list = [(0, (255,255,0)),(.25,(0,128,255)),(.5,(0,128,128)),(.75,(128,0,128)),(.99,(255,255,0))]
+    #~ g_list = [(0, (255,0,0)),(.5,(0,128,255)),(.99,(255,0,0))]
     #~ g_list = [(0, (255,0,0)),(.5,(255,128,0)),(.99,(255,0,0))]
-    #~ g_list = [(0, (255,255,0)),(.35,(0,128,255)),(.25,(255,0,255)),(.65,(255,0,0)),(.85,(128,0,128)),(.99,(255,255,0))]
-    p_list = list(gradient_gen(g_list, 510
-    ))
+    g_list = [(0, (255,0,0)),(.33,(255,0,255)),(.66,(0,0,255)),(.99,(255,0,0))]
+    #~ g_list = [(0, (0,255,0)),(.35,(0,128,255)),(.25,(255,0,255)),(.65,(255,0,0)),(.85,(0,128,255)),(.99,(0,255,0))]
+    p_list = list(gradient_gen(g_list, 3010))
     
     #~ make_thread_image(p_list, 4).show()
-    make_web_image(p_list, 3, 1080, 500).show()
+    make_web_image(p_list, p_list, 4, 400, 200).show()
+    make_web_image(((0,0,0),), ((255,255,255),), 6, 150, 75).show()
     
     return 0
 

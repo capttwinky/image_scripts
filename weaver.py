@@ -3,14 +3,16 @@
 #
 #  weaver.py
 #  
-#  weave an image from a varigation
+#  Use Python Image Library to weave an image from a standard draft.
 #  
 #  © 2015-01-23
-#      Joel McGrady <capttwinky@github.com>
+#      Joel Mc Grady <capttwinky@github.com>
 #  
 from itertools import cycle, repeat
 from functools import partial
 import random
+from datetime import datetime
+
 from PIL import Image
 
 
@@ -84,7 +86,7 @@ def make_thread_image(rgbs, repeats=3):
     return to_ret
 
 
-def make_warp_image(rgbs, thread_width, ends, shots):
+def make_warp_image(rgbs, thread_width, ends, shots, randomize=True):
     '''make the warp image'''
     clist = cycle(rgbs)  ##infinate thread!!
     image_width = thread_width * ends
@@ -98,12 +100,12 @@ def make_warp_image(rgbs, thread_width, ends, shots):
             for j in range(image_height):
                 pixels[img_col,j] = thread[j]
             img_col+=1
-        if not random.randint(0,5):
+        if randomize and not random.randint(0,5):
             [clist.next() for i in xrange(random.randint(image_height/4, image_height/2))]
     return img
 
 
-def make_weft_image(rgbs, thread_width, ends, shots):
+def make_weft_image(rgbs, thread_width, ends, shots, randomize=True):
     clist = cycle(rgbs)
     image_width = thread_width * ends
     image_height = thread_width * shots
@@ -116,22 +118,25 @@ def make_weft_image(rgbs, thread_width, ends, shots):
             for j in range(image_width):
                 pixels[j,img_row] = thread[j] # set the colour accordingly
             img_row+=1
-        if not random.randint(0,10):
+        if randomize and not random.randint(0,10):
             [clist.next() for i in xrange(random.randint(image_width/4, image_width/2))]
     return img
 
 
-def make_web_image(warp_thread, weft_thread, thread_width, ends, shots):
+def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=False):
     image_width = thread_width * ends
     image_height = thread_width * shots
+    ## first make the images for the warp & the weft
     weft_image = make_weft_image(weft_thread, thread_width, ends, shots)
     warp_image = make_warp_image(warp_thread, thread_width, ends, shots)
-    #~ weft_image.show()
-    #~ warp_image.show()
+    if verbose:
+        weft_image.show()
+        warp_image.show()
     weft_pixels = weft_image.load()
     warp_pixels = warp_image.load()
-    
-    ## plain weave 
+
+    ## here are some setups for sample weaves:
+    ## plain tabby weave 
     #~ headles = ((1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1))
     #~ pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
     #~ pedal_steps = ((pedals[1],pedals[3]), (pedals[0],pedals[2],),)
@@ -222,12 +227,17 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots):
                    (pedals[2],),
                    (pedals[1],),)
  
+    ## now set up the treading
     treads = cycle(pedal_steps)
     img = Image.new('RGB', (image_width,image_height), "black") # create a new black image
     pixels = img.load()
     for s in xrange(shots):
+        ## get all the headles that are raised in the current step
         lift = sum(treads.next(),tuple())
+        ## set the source image list so that it will
+        ## show the weft for any raised thread, otherwise the warp
         shed = [weft_pixels if any(h) else warp_pixels for h in zip(*lift)]
+        ## copy the pixels from the source image into the final image
         for y in xrange(thread_width):
             ay = thread_width*s+y
             for e in xrange(ends):
@@ -235,9 +245,13 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots):
                 for x in xrange(thread_width):
                     ax = thread_width*e+x
                     pixels[ax,ay] = s_row[ax,ay]
+        if verbose == 'extra' and s <= 2*len(pedal_steps):
+            img.show()
     return img
 
 def main():
+    
+    ## some test threads
     
     #~ g_list = [(0, (255,255,0)),(.25,(0,128,255)),(.45,(255,0,255)),(.65,(255,0,0)),(.85,(128,0,128)),(.99,(255,255,0))]
     #~ h_list = [(0, (255,255,0)),(.25,(0,128,255)),(.5,(0,128,128)),(.75,(128,0,128)),(.99,(255,255,0))]
@@ -256,11 +270,19 @@ def main():
     #~ g_list = [(0, (255,0,0)),(.33,(255,0,255)),(.66,(0,0,255)),(.99,(255,0,0))]
     
     #g_list = [(0, (0,255,0)),(.35,(0,128,255)),(.25,(255,0,255)),(.65,(255,0,0)),(.85,(0,128,255)),(.99,(0,255,0))]
-    #~ thread_0 = list(gradient_gen(h_list, 9000))
-    #~ thread_1 = list(gradient_gen(g_list, 7000))
-    #~ make_thread_image(p_list, 4).show()
-    #~ make_web_image(thread_1, thread_0, 6, 200, 150).show()
+    
+    ## show a sample image of the basic draft
     make_web_image(((255,100,0),), ((0,0,255),), 6, 150, 75).show()
+    
+    ## first make the warp & weft threads
+    thread_0 = list(gradient_gen(h_list, 9000))
+    thread_1 = list(gradient_gen(g_list, 7000))
+    ## pass those threads into make_web_image    
+    op_image = make_web_image(thread_1, thread_0, 6, 200, 150, verbose=True)
+    ## show the image
+    op_image.show()
+    if raw_input('type y to save this image') == 'y':
+        op
     
     return 0
 

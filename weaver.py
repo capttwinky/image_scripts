@@ -12,6 +12,7 @@ from itertools import cycle, repeat
 from functools import partial
 import random
 from datetime import datetime
+from os.path import abspath
 
 from PIL import Image
 
@@ -281,11 +282,12 @@ def main():
     op_image = make_web_image(thread_1, thread_0, 6, 200, 150, verbose=True)
     ## show the image
     op_image.show()
-    if raw_input('type y to save this image') == 'y':
-        op
+    if raw_input('type y <enter> to save this image, or just <enter> to quit. ') == 'y':
+        image_name = 'weave_{}.png'.format(datetime.utcnow().strftime('%Y%m%d%H%M%S'))
+        op_image.save(image_name)
+        print "Saved {}".format(abspath('./{}'.format(image_name)))
     
     return 0
 
 if __name__ == '__main__':
     main()
-

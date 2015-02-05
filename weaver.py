@@ -89,14 +89,14 @@ def make_thread_image(rgbs, repeats=3):
 
 def make_warp_image(rgbs, thread_width, ends, shots, randomize=True):
     '''make the warp image'''
-    clist = cycle(rgbs)  ##infinate thread!!
+    clist = [cycle(rgblist) for rgblist in rgbs]  ##infinate thread!!
     image_width = thread_width * ends
     image_height = thread_width * shots
     img = Image.new('RGB', (image_width,image_height), "black") # create a new black image
     pixels = img.load() # create the pixel map
     img_col = 0
     for e in xrange(ends):
-        thread = [clist.next() for i in xrange(image_height)]
+        thread = [clist[e%len(clist)].next() for i in xrange(image_height)]
         for i in xrange(thread_width):
             for j in range(image_height):
                 pixels[img_col,j] = thread[j]
@@ -107,14 +107,14 @@ def make_warp_image(rgbs, thread_width, ends, shots, randomize=True):
 
 
 def make_weft_image(rgbs, thread_width, ends, shots, randomize=True):
-    clist = cycle(rgbs)
+    clist = [cycle(rgblist) for rgblist in rgbs]
     image_width = thread_width * ends
     image_height = thread_width * shots
     img = Image.new('RGB', (image_width,image_height), "black") # create a new black image
     pixels = img.load() # create the pixel map
     img_row = 0
     for s in xrange(shots):
-        thread = [clist.next() for i in xrange(image_width)]
+        thread = [clist[s%len(clist)].next() for i in xrange(image_width)]
         for i in xrange(thread_width):
             for j in range(image_width):
                 pixels[j,img_row] = thread[j] # set the colour accordingly
@@ -124,12 +124,12 @@ def make_weft_image(rgbs, thread_width, ends, shots, randomize=True):
     return img
 
 
-def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=False):
+def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=False, randomize=True):
     image_width = thread_width * ends
     image_height = thread_width * shots
     ## first make the images for the warp & the weft
-    weft_image = make_weft_image(weft_thread, thread_width, ends, shots)
-    warp_image = make_warp_image(warp_thread, thread_width, ends, shots)
+    weft_image = make_weft_image(weft_thread, thread_width, ends, shots, randomize)
+    warp_image = make_warp_image(warp_thread, thread_width, ends, shots, randomize)
     if verbose:
         weft_image.show()
         warp_image.show()
@@ -138,9 +138,9 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=
 
     ## here are some setups for sample weaves:
     ## plain tabby weave 
-    #~ headles = ((1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1))
-    #~ pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
-    #~ pedal_steps = ((pedals[1],pedals[3]), (pedals[0],pedals[2],),)
+    headles = ((1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1))
+    pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
+    pedal_steps = ((pedals[1],pedals[3]), (pedals[0],pedals[2],),)
 #~ 
     ## plain twill on the headles 
     #~ headles = ((1,1,0,0), (0,1,1,0), (0,0,1,1), (1,0,0,1))
@@ -198,36 +198,36 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=
                    #~ (pedals[1],),)
     #~ 
     ## honeysuckle 
-    headles = ((1,0,0,0, 1,0,1,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,1,0, 0,0,),
-               (0,1,0,0, 0,1,0,1, 0,1,0,0, 0,0,0,0, 0,1,0,1, 0,1,0,0, 0,1,),
-               (0,0,1,0, 0,0,0,0, 1,0,1,0, 1,0,1,0, 1,0,1,0, 0,0,0,0, 1,0,),
-               (0,0,0,1, 0,0,0,0, 0,0,0,1, 0,1,0,1, 0,0,0,0, 0,0,0,1, 0,0,),
-              )
-    pedals = ((headles[0],headles[1],), 
-              (headles[1],headles[2],), 
-              (headles[2],headles[3],),
-              (headles[3],headles[0],),)
-    pedal_steps = ((pedals[0],),
-                   (pedals[1],),
-                   (pedals[2],),
-                   (pedals[3],),
-
-                   (pedals[0],),
-                   (pedals[1],),
-                   (pedals[2],),
-                   (pedals[3],),
-                   
-                   (pedals[0],),
-                   
-                   (pedals[3],),
-                   (pedals[2],),
-                   (pedals[1],),
-                   (pedals[0],),
-
-                   (pedals[3],),
-                   (pedals[2],),
-                   (pedals[1],),)
- 
+    #~ headles = ((1,0,0,0, 1,0,1,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,1,0, 0,0,),
+               #~ (0,1,0,0, 0,1,0,1, 0,1,0,0, 0,0,0,0, 0,1,0,1, 0,1,0,0, 0,1,),
+               #~ (0,0,1,0, 0,0,0,0, 1,0,1,0, 1,0,1,0, 1,0,1,0, 0,0,0,0, 1,0,),
+               #~ (0,0,0,1, 0,0,0,0, 0,0,0,1, 0,1,0,1, 0,0,0,0, 0,0,0,1, 0,0,),
+              #~ )
+    #~ pedals = ((headles[0],headles[1],), 
+              #~ (headles[1],headles[2],), 
+              #~ (headles[2],headles[3],),
+              #~ (headles[3],headles[0],),)
+    #~ pedal_steps = ((pedals[0],),
+                   #~ (pedals[1],),
+                   #~ (pedals[2],),
+                   #~ (pedals[3],),
+#~ 
+                   #~ (pedals[0],),
+                   #~ (pedals[1],),
+                   #~ (pedals[2],),
+                   #~ (pedals[3],),
+                   #~ 
+                   #~ (pedals[0],),
+                   #~ 
+                   #~ (pedals[3],),
+                   #~ (pedals[2],),
+                   #~ (pedals[1],),
+                   #~ (pedals[0],),
+#~ 
+                   #~ (pedals[3],),
+                   #~ (pedals[2],),
+                   #~ (pedals[1],),)
+ #~ 
     ## now set up the treading
     treads = cycle(pedal_steps)
     img = Image.new('RGB', (image_width,image_height), "black") # create a new black image
@@ -259,13 +259,13 @@ def main():
     #~ 
     
     ## blue and orange
-    #~ h_list = [(0, (255,100,0)),(.5,(0,0,255)),(.99,(255,100,0))]
+    h_list = [(0, (255,100,0)),(.5,(0,0,255)),(.99,(255,100,0))]
     
     ## blue red
-    h_list = [(0, (255,0,0)),(.5,(0,128,255)),(.99,(255,0,0))]
+    g_list = [(0, (255,0,0)),(.5,(0,128,255)),(.99,(255,0,0))]
     
     ## blue orange
-    g_list = [(0, (0,128,255,)),(.5,(255,128,0)),(.99,(0,128,255,))]
+    #~ g_list = [(0, (0,128,255,)),(.5,(255,128,0)),(.99,(0,128,255,))]
     
     ## red-magenta-blue
     #~ g_list = [(0, (255,0,0)),(.33,(255,0,255)),(.66,(0,0,255)),(.99,(255,0,0))]
@@ -273,13 +273,21 @@ def main():
     #g_list = [(0, (0,255,0)),(.35,(0,128,255)),(.25,(255,0,255)),(.65,(255,0,0)),(.85,(0,128,255)),(.99,(0,255,0))]
     
     ## show a sample image of the basic draft
-    make_web_image(((255,100,0),), ((0,0,255),), 6, 150, 75).show()
+    #~ make_web_image(((255,100,0),), ((0,0,255),), 6, 150, 75).show()
     
     ## first make the warp & weft threads
     thread_0 = list(gradient_gen(h_list, 9000))
     thread_1 = list(gradient_gen(g_list, 7000))
+    blue_thread = ((0,0,255,),)    
+    orange_thread = ((255,100,0,),)
+    
+    #~ warp_threads = (blue_thread,orange_thread,blue_thread,orange_thread,)
+    #~ weft_threads = (blue_thread,orange_thread,blue_thread,orange_thread,)
+    warp_threads = (thread_0,thread_0,thread_1,thread_1,)
+    weft_threads = (thread_1,thread_1,thread_0,thread_0,)
+    
     ## pass those threads into make_web_image    
-    op_image = make_web_image(thread_1, thread_0, 6, 200, 150, verbose=True)
+    op_image = make_web_image(warp_threads, weft_threads, 6, 200, 150, randomize=False)
     ## show the image
     op_image.show()
     if raw_input('type y <enter> to save this image, or just <enter> to quit. ') == 'y':

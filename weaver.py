@@ -139,8 +139,8 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=
     ## here are some setups for sample weaves:
     ## plain tabby weave 
     headles = ((1,0,0,0), (0,1,0,0), (0,0,1,0), (0,0,0,1))
-    pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
-    pedal_steps = ((pedals[1],pedals[3]), (pedals[0],pedals[2],),)
+    #~ pedals = [(headles[0],), (headles[1],), (headles[2],), (headles[3],)]
+    #~ pedal_steps = ((pedals[1],pedals[3]), (pedals[0],pedals[2],),)
 #~ 
     ## plain twill on the headles 
     #~ headles = ((1,1,0,0), (0,1,1,0), (0,0,1,1), (1,0,0,1))
@@ -164,22 +164,22 @@ def make_web_image(warp_thread, weft_thread, thread_width, ends, shots, verbose=
                      #~ (pedals[3],pedals[0],),)
 
     ## rosepath III
-    #~ headles = ((1,0,1,0,0,0,0,0),
-               #~ (0,1,0,0,0,1,0,0),
-               #~ (0,0,0,0,1,0,1,0),
-               #~ (0,0,0,1,0,0,0,1),)
-    #~ pedals = ((headles[0],headles[1],), 
-              #~ (headles[1],headles[2],), 
-              #~ (headles[2],headles[3],),
-              #~ (headles[3],headles[0],),)
-    #~ pedal_steps = ((pedals[0],),
-                   #~ (pedals[1],),
-                   #~ (pedals[0],),
-                   #~ (pedals[3],),
-                   #~ (pedals[2],),
-                   #~ (pedals[1],),
-                   #~ (pedals[2],),
-                   #~ (pedals[3],),)
+    headles = ((1,0,1,0,0,0,0,0),
+               (0,1,0,0,0,1,0,0),
+               (0,0,0,0,1,0,1,0),
+               (0,0,0,1,0,0,0,1),)
+    pedals = ((headles[0],headles[1],), 
+              (headles[1],headles[2],), 
+              (headles[2],headles[3],),
+              (headles[3],headles[0],),)
+    pedal_steps = ((pedals[0],),
+                   (pedals[1],),
+                   (pedals[0],),
+                   (pedals[3],),
+                   (pedals[2],),
+                   (pedals[1],),
+                   (pedals[2],),
+                   (pedals[3],),)
 #~ 
     #~ ## rosepath, reverse twill treading
     #~ headles = ((1,0,1,0,0,0,0,0),
@@ -281,13 +281,27 @@ def main():
     blue_thread = ((0,0,255,),)    
     orange_thread = ((255,100,0,),)
     
-    #~ warp_threads = (blue_thread,orange_thread,blue_thread,orange_thread,)
-    #~ weft_threads = (blue_thread,orange_thread,blue_thread,orange_thread,)
-    warp_threads = (thread_0,thread_0,thread_1,thread_1,)
-    weft_threads = (thread_1,thread_1,thread_0,thread_0,)
+    thread_set_0 = (orange_thread,blue_thread,)
+    thread_set_1 = (thread_0,thread_1,)
+    #~ warp_pattern = (0,1,1,0,)
+    #~ weft_pattern = (1,0,0,1,)
+    warp_pattern = (1,1,0,0,)
+    weft_pattern = (0,0,1,1,)
+    
+    
+    warp_threads_0 = (thread_set_0[i] for i in warp_pattern)
+    weft_threads_0 = (thread_set_0[i] for i in weft_pattern)
+
+    warp_threads_1 = (thread_set_1[i] for i in warp_pattern)
+    weft_threads_1 = (thread_set_1[i] for i in weft_pattern)
+
+    ## pass those threads into make_web_image    
+    o_image = make_web_image(warp_threads_0, weft_threads_0, 6, 200, 150, randomize=False)
+    ## show the image
+    o_image.show()
     
     ## pass those threads into make_web_image    
-    op_image = make_web_image(warp_threads, weft_threads, 6, 200, 150, randomize=False)
+    op_image = make_web_image(warp_threads_1, weft_threads_1, 6, 200, 150, randomize=False)
     ## show the image
     op_image.show()
     if raw_input('type y <enter> to save this image, or just <enter> to quit. ') == 'y':
